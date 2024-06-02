@@ -1,24 +1,31 @@
-import pygame, sys
+import pygame
 from game import Game
 from colors import Colors
+import sys
 
 pygame.init()
 
+# Setting up fonts and text surfaces
 title_font = pygame.font.Font(None, 40)
 score_surface = title_font.render("Score", True, Colors.white)
 next_surface = title_font.render("Next", True, Colors.white)
 game_over_surface = title_font.render("GAME OVER", True, Colors.white)
+pause_surface = title_font.render("PAUSED", True, Colors.white)
 
+# Setting up rectangles for score and next block display
 score_rect = pygame.Rect(320, 55, 170, 60)
 next_rect = pygame.Rect(320, 215, 170, 180)
 
+# Setting up the display
 screen = pygame.display.set_mode((500, 620))
 pygame.display.set_caption("Python Tetris")
 
 clock = pygame.time.Clock()
 
 game = Game()
+paused = False
 
+# Setting up the custom event for game updates
 GAME_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(GAME_UPDATE, 200)
 
@@ -28,19 +35,25 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == pygame.KEYDOWN:
-            if game.game_over:
-                game.game_over = False
-                game.reset()
-            if event.key == pygame.K_LEFT and game.game_over == False:
-                game.move_left()
-            if event.key == pygame.K_RIGHT and game.game_over == False:
-                game.move_right()
-            if event.key == pygame.K_DOWN and game.game_over == False:
-                game.move_down()
-                game.update_score(0, 1)
-            if event.key == pygame.K_UP and game.game_over == False:
-                game.rotate()
-        if event.type == GAME_UPDATE and game.game_over == False:
+            if event.key == pygame.K_ESCAPE:
+                paused = not paused
+            if not paused:
+                if game.game_over:
+                    game.game_over = False
+                    game.reset()
+                if event.key == pygame.K_LEFT and not game.game_over:
+                    game.move_left()
+                if event.key == pygame.K_RIGHT and not game.game_over:
+                    game.move_right()
+                if event.key == pygame.K_DOWN and not game.game_over:
+                    game.move_down()
+                    game.update_score(0, 1)
+                if event.key == pygame.K_UP and not game.game_over:
+                    game.rotate()
+            if event.key == pygame.K_p:
+                paused = not paused
+
+        if event.type == GAME_UPDATE and not paused and not game.game_over:
             game.move_down()
 
     # Drawing
@@ -58,6 +71,9 @@ while True:
                                                                   centery=score_rect.centery))
     pygame.draw.rect(screen, Colors.light_blue, next_rect, 0, 10)
     game.draw(screen)
+
+    if paused and not game.game_over:
+        screen.blit(pause_surface, (320, 450, 50, 50))
 
     pygame.display.update()
     clock.tick(60)
