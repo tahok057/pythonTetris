@@ -7,6 +7,7 @@ pygame.init()
 
 # Setting up fonts and text surfaces
 title_font = pygame.font.Font(None, 40)
+menu_font = pygame.font.Font(None, 60)
 score_surface = title_font.render("Score", True, Colors.white)
 next_surface = title_font.render("Next", True, Colors.white)
 game_over_surface = title_font.render("GAME OVER", True, Colors.white)
@@ -29,51 +30,84 @@ paused = False
 GAME_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(GAME_UPDATE, 200)
 
+
+def main_menu():
+    while True:
+        screen.fill(Colors.dark_blue)
+        title_surface = menu_font.render("Python Tetris", True, Colors.white)
+        start_surface = menu_font.render("Start Game", True, Colors.white)
+        quit_surface = menu_font.render("Quit Game", True, Colors.white)
+
+        title_rect = title_surface.get_rect(center=(250, 150))
+        start_rect = start_surface.get_rect(center=(250, 300))
+        quit_rect = quit_surface.get_rect(center=(250, 400))
+
+        screen.blit(title_surface, title_rect)
+        screen.blit(start_surface, start_rect)
+        screen.blit(quit_surface, quit_rect)
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if start_rect.collidepoint(event.pos):
+                    return  # Start the game
+                if quit_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                paused = not paused
-            if not paused:
-                if game.game_over:
-                    game.game_over = False
-                    game.reset()
-                if event.key == pygame.K_LEFT and not game.game_over:
-                    game.move_left()
-                if event.key == pygame.K_RIGHT and not game.game_over:
-                    game.move_right()
-                if event.key == pygame.K_DOWN and not game.game_over:
-                    game.move_down()
-                    game.update_score(0, 1)
-                if event.key == pygame.K_UP and not game.game_over:
-                    game.rotate()
-            if event.key == pygame.K_p:
-                paused = not paused
+    main_menu()
 
-        if event.type == GAME_UPDATE and not paused and not game.game_over:
-            game.move_down()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    paused = not paused
+                if not paused:
+                    if game.game_over:
+                        game.game_over = False
+                        game.reset()
+                    if event.key == pygame.K_LEFT and not game.game_over:
+                        game.move_left()
+                    if event.key == pygame.K_RIGHT and not game.game_over:
+                        game.move_right()
+                    if event.key == pygame.K_DOWN and not game.game_over:
+                        game.move_down()
+                        game.update_score(0, 1)
+                    if event.key == pygame.K_UP and not game.game_over:
+                        game.rotate()
+                if event.key == pygame.K_p:
+                    paused = not paused
 
-    # Drawing
-    score_value_surface = title_font.render(str(game.score), True, Colors.white)
+            if event.type == GAME_UPDATE and not paused and not game.game_over:
+                game.move_down()
 
-    screen.fill(Colors.dark_blue)
-    screen.blit(score_surface, (365, 20, 50, 50))
-    screen.blit(next_surface, (375, 180, 50, 50))
+        # Drawing
+        score_value_surface = title_font.render(str(game.score), True, Colors.white)
 
-    if game.game_over:
-        screen.blit(game_over_surface, (320, 450, 50, 50))
+        screen.fill(Colors.dark_blue)
+        screen.blit(score_surface, (365, 20, 50, 50))
+        screen.blit(next_surface, (375, 180, 50, 50))
 
-    pygame.draw.rect(screen, Colors.light_blue, score_rect, 0, 10)
-    screen.blit(score_value_surface, score_value_surface.get_rect(centerx=score_rect.centerx,
-                                                                  centery=score_rect.centery))
-    pygame.draw.rect(screen, Colors.light_blue, next_rect, 0, 10)
-    game.draw(screen)
+        if game.game_over:
+            screen.blit(game_over_surface, (320, 450, 50, 50))
 
-    if paused and not game.game_over:
-        screen.blit(pause_surface, (320, 450, 50, 50))
+        pygame.draw.rect(screen, Colors.light_blue, score_rect, 0, 10)
+        screen.blit(score_value_surface, score_value_surface.get_rect(centerx=score_rect.centerx,
+                                                                      centery=score_rect.centery))
+        pygame.draw.rect(screen, Colors.light_blue, next_rect, 0, 10)
+        game.draw(screen)
 
-    pygame.display.update()
-    clock.tick(60)
+        if paused and not game.game_over:
+            screen.blit(pause_surface, (320, 450, 50, 50))
+
+        pygame.display.update()
+        clock.tick(60)
